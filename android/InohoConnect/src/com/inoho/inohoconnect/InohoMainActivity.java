@@ -51,9 +51,6 @@ public class InohoMainActivity extends Activity {
 		getHomeLinkAndInitializeWebView();
 	}
 	
-	private InohoConnectionManager m_conMgr = null;
-	
-	private Handler m_handler = null;
 	
 	private void getHomeLinkAndInitializeWebView() {
 		m_handler = new Handler();
@@ -210,6 +207,8 @@ public class InohoMainActivity extends Activity {
 	private String m_linkToLoad;
 
 	private WebView mWebView;
-	//private static String mOfflineInfo = "<html><body> <h3 style=\"color:red\"> Your Device seems to be offline!!!</h3></body></html>";	
 	private InohoConnectionChangeListner m_inohoCnctnListner = null;
+	private InohoConnectionManager m_conMgr = null;
+	private Handler m_handler = null;
+	
 }
