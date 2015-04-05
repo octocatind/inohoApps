@@ -51,20 +51,39 @@ public class InohoMainActivity extends Activity {
 		getHomeLinkAndInitializeWebView();
 	}
 	
-	
-	private void getHomeLinkAndInitializeWebView() {
+	private void getHomeLinkIntializeWebViewFull() {
 		m_handler = new Handler();
-		
 		
 		new Thread(new Runnable() {			
 			@Override
 			public void run() {
-				m_linkToLoad = m_conMgr.getHomeLink();			  
+				String linkToConnect = m_conMgr.getHomeLink(false);			  
+				if(!linkToConnect.equalsIgnoreCase(m_linkToLoad)) {  
+					m_handler.postDelayed(new Runnable() {
+						@Override
+						public void run() {
+						  InohoMainActivity.this.inititializeWebView();						  
+						}
+					}, 500);
+				}
+			}
+		}).start();
+	}
+	
+	private void getHomeLinkAndInitializeWebView() {
+		//let's try quick connect first and then full
+		m_handler = new Handler();
+		
+		new Thread(new Runnable() {			
+			@Override
+			public void run() {
+				m_linkToLoad = m_conMgr.getHomeLink(true);			  
 				  
 				m_handler.postDelayed(new Runnable() {
 					  @Override
 					  public void run() {
-						  InohoMainActivity.this.inititializeWebView();						  
+						  InohoMainActivity.this.inititializeWebView();
+						  getHomeLinkIntializeWebViewFull();
 					  }
 					}, 500);
 			}

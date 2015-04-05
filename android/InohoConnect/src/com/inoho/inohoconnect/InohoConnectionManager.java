@@ -38,7 +38,7 @@ public class InohoConnectionManager {
 		m_AppContext = ctx;
 	}
 	
-	public String getHomeLink() {
+	public String getHomeLink(boolean quickConnect) {
 		String linkToHome = "";
 		
 		//is device online at all
@@ -47,7 +47,7 @@ public class InohoConnectionManager {
 			CONNECTION_TYPE ct = getConnectionInfo();
 			
 			if(ct == CONNECTION_TYPE.WIFI) {
-				linkToHome = getLinkWhenOnWifi();
+				linkToHome = getLinkWhenOnWifi(quickConnect);
 				if(linkToHome.isEmpty()) {
 					Resources res = m_AppContext.getResources();
 					linkToHome = res.getString(R.string.cloudLink);
@@ -62,7 +62,7 @@ public class InohoConnectionManager {
 	}
 	
 	//private APIs region	
-	private String getLinkWhenOnWifi() {
+	private String getLinkWhenOnWifi(boolean quickConnect) {
 		String addressToHome = "";
 		
 		WifiManager wifiManager = (WifiManager) m_AppContext.getSystemService(Context.WIFI_SERVICE);
@@ -76,7 +76,7 @@ public class InohoConnectionManager {
 	    	addressToHome = getLinkByPingingPrvslyCnctdIPs();
 	    	if(addressToHome.isEmpty()) {
 	    		addressToHome = getLinkByPingingBroadCastIP();
-	    		if(addressToHome.isEmpty()){
+	    		if(addressToHome.isEmpty() && !quickConnect){//do this only in full connect flow
 	    			addressToHome = getLinkByPingingAll(ipAdrsPart);
 	    		}
 	    	}
