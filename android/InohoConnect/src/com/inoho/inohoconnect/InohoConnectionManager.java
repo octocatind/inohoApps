@@ -234,9 +234,6 @@ public class InohoConnectionManager {
 		boolean result = false;		
 		try {
 			
-			StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-	        StrictMode.setThreadPolicy(policy); 
-	        
 	        Resources res = m_AppContext.getResources();
 			String localLinkPref = res.getString(R.string.handShakeLink);
 	        String completeLocalLink = String.format(localLinkPref, fullIPAddress);
