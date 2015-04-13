@@ -58,7 +58,8 @@ public class InohoMainActivity extends Activity {
 			@Override
 			public void run() {
 				String linkToConnect = m_conMgr.getHomeLink(false);			  
-				if(!linkToConnect.equalsIgnoreCase(m_linkToLoad)) {  
+				if(!linkToConnect.equalsIgnoreCase(m_linkToLoad)) {
+					m_linkToLoad = linkToConnect;
 					m_handler.postDelayed(new Runnable() {
 						@Override
 						public void run() {
@@ -180,7 +181,8 @@ public class InohoMainActivity extends Activity {
 						@Override
 						public void run() {
 							//InohoMainActivity.this.inititializeWebView(m_linkToLoad);
-							 mWebView.loadUrl(m_linkToLoad);
+							 if(!m_linkToLoad.isEmpty())
+								 mWebView.loadUrl(m_linkToLoad);
 						}
 					}, 2000);
 				} else {					
