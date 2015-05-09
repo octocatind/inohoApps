@@ -39,27 +39,30 @@ public class InohoConnectionManager {
 	}
 	
 	public String getHomeLink(boolean quickConnect) {
-		String linkToHome = "";
-		
+		String linkToHome = "";		
 		//is device online at all
 		if(isDeviceOnline()) {
 			//get connection type
-			CONNECTION_TYPE ct = getConnectionInfo();
+			getConnectionInfo();
 			
-			if(ct == CONNECTION_TYPE.WIFI) {
+			if(m_ConnectionType == CONNECTION_TYPE.WIFI) {
 				linkToHome = getLinkWhenOnWifi(quickConnect);
 				if(linkToHome.isEmpty()) {
 					Resources res = m_AppContext.getResources();
 					linkToHome = res.getString(R.string.cloudLink);
 				}
-			} else if(ct == CONNECTION_TYPE.MOBILE){
+			} else if(m_ConnectionType == CONNECTION_TYPE.MOBILE){
 				Resources res = m_AppContext.getResources();
 				linkToHome = res.getString(R.string.cloudLink);
 			}
-		}
-		
+		}		
 		return linkToHome;
 	}
+	
+	public CONNECTION_TYPE getCurrentConnectionType() {
+		return m_ConnectionType;
+	}
+	
 	
 	//private APIs region	
 	private String getLinkWhenOnWifi(boolean quickConnect) {
@@ -302,29 +305,28 @@ public class InohoConnectionManager {
 	    return isOnline;
 	}
 	
-	private CONNECTION_TYPE getConnectionInfo() {
-		CONNECTION_TYPE ct = CONNECTION_TYPE.NONE;
-		
+	private void getConnectionInfo() {
 		final ConnectivityManager connMgr = (ConnectivityManager)  m_AppContext.getSystemService(Context.CONNECTIVITY_SERVICE);   
 			
 		final NetworkInfo wifi =  connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 		final NetworkInfo mobile =  connMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
 		if(wifi.isConnected()){
-			ct = CONNECTION_TYPE.WIFI;			
+			m_ConnectionType = CONNECTION_TYPE.WIFI;			
 		} else if(mobile.isConnected()){
-			ct = CONNECTION_TYPE.MOBILE;
+			m_ConnectionType = CONNECTION_TYPE.MOBILE;
 		} else  {
-			ct = CONNECTION_TYPE.NONE;
-		}	
-		return ct;
+			m_ConnectionType = CONNECTION_TYPE.NONE;
+		}
 	}
 	
 	//Data region
-	private Context m_AppContext = null;
-	private enum CONNECTION_TYPE {
+	public enum CONNECTION_TYPE {
 		NONE,
 		WIFI,
 		MOBILE
 	};
+	
+	private Context m_AppContext = null;
+	private CONNECTION_TYPE m_ConnectionType = CONNECTION_TYPE.NONE;	
 	private static String LOG_TAG = "CONCTNMGR";
 }

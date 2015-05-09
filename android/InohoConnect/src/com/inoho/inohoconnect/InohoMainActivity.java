@@ -13,9 +13,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
+import com.inoho.inohoconnect.InohoConnectionManager.CONNECTION_TYPE;
 
 public class InohoMainActivity extends Activity {
 
@@ -45,50 +45,9 @@ public class InohoMainActivity extends Activity {
 		//intialize 
 		getHomeLinkAndInitializeWebView();
 	}
-
 	
 	public void onRetryClickConnect(View v) {
 		getHomeLinkAndInitializeWebView();
-	}
-	
-	private void getHomeLinkIntializeWebViewFull() {
-		m_handler = new Handler();
-		
-		new Thread(new Runnable() {			
-			@Override
-			public void run() {
-				String linkToConnect = m_conMgr.getHomeLink(false);			  
-				if(!linkToConnect.equalsIgnoreCase(m_linkToLoad)) {
-					m_linkToLoad = linkToConnect;
-					m_handler.postDelayed(new Runnable() {
-						@Override
-						public void run() {
-						  InohoMainActivity.this.inititializeWebView();						  
-						}
-					}, 500);
-				}
-			}
-		}).start();
-	}
-	
-	private void getHomeLinkAndInitializeWebView() {
-		//let's try quick connect first and then full
-		m_handler = new Handler();
-		
-		new Thread(new Runnable() {			
-			@Override
-			public void run() {
-				m_linkToLoad = m_conMgr.getHomeLink(true);			  
-				  
-				m_handler.postDelayed(new Runnable() {
-					  @Override
-					  public void run() {
-						  InohoMainActivity.this.inititializeWebView();
-						  getHomeLinkIntializeWebViewFull();
-					  }
-					}, 500);
-			}
-		}).start();
 	}
 	
 	@Override
@@ -211,7 +170,48 @@ public class InohoMainActivity extends Activity {
 			 showOfflineView();
 		 }
 	}
+	
+	//private functionalities
+	private void getHomeLinkIntializeWebViewFull() {
+		m_handler = new Handler();
+		new Thread(new Runnable() {			
+			@Override
+			public void run() {
+				String linkToConnect = m_conMgr.getHomeLink(false);			  
+				if(!linkToConnect.equalsIgnoreCase(m_linkToLoad)) {
+					m_linkToLoad = linkToConnect;
+					m_handler.postDelayed(new Runnable() {
+						@Override
+						public void run() {
+						  InohoMainActivity.this.inititializeWebView();						  
+						}
+					}, 500);
+				}
+			}
+		}).start();
+	}
 		
+	private void getHomeLinkAndInitializeWebView() {
+		//let's try quick connect first and then full
+		m_handler = new Handler();
+		
+		new Thread(new Runnable() {			
+			@Override
+			public void run() {
+				m_linkToLoad = m_conMgr.getHomeLink(true);			  
+				  
+				m_handler.postDelayed(new Runnable() {
+					  @Override
+					  public void run() {
+						  InohoMainActivity.this.inititializeWebView();
+						  if(m_conMgr.getCurrentConnectionType() != CONNECTION_TYPE.MOBILE)
+							  getHomeLinkIntializeWebViewFull();
+					  }
+					}, 500);
+			}
+		}).start();
+	}		
+
 	private void showOfflineView() {
 		FrameLayout fmWebView = (FrameLayout) findViewById(R.id.webViewScreen);
 		fmWebView.setVisibility(View.INVISIBLE);
