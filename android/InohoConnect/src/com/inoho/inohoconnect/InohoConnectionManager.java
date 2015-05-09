@@ -30,6 +30,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.StrictMode;
 import android.text.format.Formatter;
+import android.util.Log;
 
 
 public class InohoConnectionManager {
@@ -40,7 +41,8 @@ public class InohoConnectionManager {
 	
 	public String getHomeLink(boolean quickConnect) {
 		String linkToHome = "";
-		
+		Log.e(LOG_TAG, "entering getHomeLink");
+	    
 		//is device online at all
 		if(isDeviceOnline()) {
 			//get connection type
@@ -57,7 +59,8 @@ public class InohoConnectionManager {
 				linkToHome = res.getString(R.string.cloudLink);
 			}
 		}
-		
+		Log.e(LOG_TAG, "returning from getHomeLink with URL: " + linkToHome);
+	    
 		return linkToHome;
 	}
 	
@@ -88,7 +91,7 @@ public class InohoConnectionManager {
 			String localLinkPref = res.getString(R.string.localLink);
 	        addressToHome = String.format(localLinkPref, addressToHome);	        
 	    }
-	    
+	    Log.e(LOG_TAG, "returning from getLinkWhenOnWifi with URL: " + addressToHome);
 	    return addressToHome;
 	}
 	
