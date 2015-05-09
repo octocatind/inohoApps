@@ -15,6 +15,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
+
 import com.inoho.inohoconnect.InohoConnectionManager.CONNECTION_TYPE;
 
 public class InohoMainActivity extends Activity {
@@ -22,7 +23,7 @@ public class InohoMainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+
 		setContentView(R.layout.activity_inoho_main);
 
 		if (savedInstanceState == null) {
@@ -42,12 +43,15 @@ public class InohoMainActivity extends Activity {
 		//create instance of connection Manager
 		m_conMgr = new InohoConnectionManager(this.getApplicationContext());
 		
-		//intialize 
-		getHomeLinkAndInitializeWebView();
+		//Initialize webview
+		inititializeWebView();
+		
+		//get home link and load 
+		openHomeLinkInQuickMode();
 	}
 	
 	public void onRetryClickConnect(View v) {
-		getHomeLinkAndInitializeWebView();
+		openHomeLinkInQuickMode();
 	}
 	
 	@Override
@@ -97,7 +101,7 @@ public class InohoMainActivity extends Activity {
 			FrameLayout fmWebView = (FrameLayout) findViewById(R.id.webViewScreen);
 			fmWebView.setVisibility(View.INVISIBLE);
 			
-			getHomeLinkAndInitializeWebView();
+			openHomeLinkInQuickMode();
 		}
 	}
 	
@@ -139,9 +143,8 @@ public class InohoMainActivity extends Activity {
 						
 						@Override
 						public void run() {
-							//InohoMainActivity.this.inititializeWebView(m_linkToLoad);
-							 if(!m_linkToLoad.isEmpty())
-								 mWebView.loadUrl(m_linkToLoad);
+							if(!m_linkToLoad.isEmpty())
+								mWebView.loadUrl(m_linkToLoad);
 						}
 					}, 2000);
 				} else {					
@@ -161,8 +164,11 @@ public class InohoMainActivity extends Activity {
 				fmOfflineWebView.setVisibility(View.INVISIBLE);
 			 }
 		 });
-		 
-		 //all set now load content
+	}
+	
+	//private functionalities
+	private void loadHomePage() {
+		//all set now load content
 		 if(!m_linkToLoad.isEmpty()) {
 			 mWebView.loadUrl(m_linkToLoad);
 		 } else {
@@ -171,8 +177,7 @@ public class InohoMainActivity extends Activity {
 		 }
 	}
 	
-	//private functionalities
-	private void getHomeLinkIntializeWebViewFull() {
+	private void openHomeLinkInFullMode() {
 		m_handler = new Handler();
 		new Thread(new Runnable() {			
 			@Override
@@ -183,7 +188,7 @@ public class InohoMainActivity extends Activity {
 					m_handler.postDelayed(new Runnable() {
 						@Override
 						public void run() {
-						  InohoMainActivity.this.inititializeWebView();						  
+						  InohoMainActivity.this.loadHomePage();
 						}
 					}, 500);
 				}
@@ -191,7 +196,7 @@ public class InohoMainActivity extends Activity {
 		}).start();
 	}
 		
-	private void getHomeLinkAndInitializeWebView() {
+	private void openHomeLinkInQuickMode() {
 		//let's try quick connect first and then full
 		m_handler = new Handler();
 		
@@ -203,9 +208,9 @@ public class InohoMainActivity extends Activity {
 				m_handler.postDelayed(new Runnable() {
 					  @Override
 					  public void run() {
-						  InohoMainActivity.this.inititializeWebView();
+						  InohoMainActivity.this.loadHomePage();
 						  if(m_conMgr.getCurrentConnectionType() != CONNECTION_TYPE.MOBILE)
-							  getHomeLinkIntializeWebViewFull();
+							  openHomeLinkInFullMode();
 					  }
 					}, 500);
 			}
@@ -230,6 +235,5 @@ public class InohoMainActivity extends Activity {
 	private WebView mWebView;
 	private InohoConnectionChangeListner m_inohoCnctnListner = null;
 	private InohoConnectionManager m_conMgr = null;
-	private Handler m_handler = null;
-	
+	private Handler m_handler = null;		
 }
