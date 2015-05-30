@@ -5,6 +5,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -72,9 +75,8 @@ public class InohoConnectionManager {
 	    String ip = Formatter.formatIpAddress(ipAddress);
 	    
 	    String ipAdrsPart = ip.substring(0, ip.lastIndexOf(".")+1);
-	    addressToHome = getLinkByPingingPreferedIP(ipAdrsPart);
+	    addressToHome = getLinkFromPreferedAndPrvslyCnctdIPs(ipAdrsPart);
 	    if(addressToHome.isEmpty()) {
-	    	addressToHome = getLinkByPingingPrvslyCnctdIPs();
 	    	if(addressToHome.isEmpty()) {
 	    		addressToHome = getLinkByPingingBroadCastIP();
 	    		if(addressToHome.isEmpty() && !quickConnect){//do this only in full connect flow
@@ -91,6 +93,53 @@ public class InohoConnectionManager {
 	    }
 	    
 	    return addressToHome;
+	}
+	
+	private String getLinkFromPreferedAndPrvslyCnctdIPs(String ipAddressPart) {
+		String addressToHome = "";
+		List <String> linksToTest = null;
+		
+		SharedPreferences sp = m_AppContext.getSharedPreferences("connectedIps", Context.MODE_PRIVATE);
+		String prvslyConctdIPs = sp.getString("prefIpd", "");
+		
+		if(!prvslyConctdIPs.isEmpty()){
+			String [] ipsToPing = prvslyConctdIPs.split(";;");
+			linksToTest = new ArrayList<String>(Arrays.asList(ipsToPing));	
+		} else {
+			linksToTest = new ArrayList<String>();
+		}
+		
+		Resources res = m_AppContext.getResources();
+		int[] configuredPorts = res.getIntArray(R.array.inohoPrefIPs);
+		for(int ii=0; ii<configuredPorts.length; ii++) {
+			String fullLinkToHome = ipAddressPart + configuredPorts[ii];
+			linksToTest.add(fullLinkToHome);			
+		}
+		
+		//lets test it on multithread
+		InohoPingWorkerThread.m_linkToHome = "";
+		
+		ExecutorService exSer = Executors.newFixedThreadPool(10);
+		String localLinkPref = res.getString(R.string.handShakeLink);
+        
+		//hard coded number of hosts - this would suffice for now
+		for(int ii=0; ii< linksToTest.size(); ii++){
+			String fullLinkToHome = linksToTest.get(ii);
+			Runnable ru = new InohoPingWorkerThread(fullLinkToHome, localLinkPref);
+			exSer.execute(ru);
+		}
+		
+		exSer.shutdown();
+		while(!exSer.isTerminated()){
+			//wait for termination
+			if(!InohoPingWorkerThread.m_linkToHome.isEmpty()){
+				exSer.shutdownNow();
+			}
+		}
+		
+		addressToHome = InohoPingWorkerThread.m_linkToHome;
+		
+		return addressToHome;
 	}
 	
 	private void saveConnectedIps(String localAddressToHome) {
@@ -124,6 +173,9 @@ public class InohoConnectionManager {
 		}
 	}
 	
+/*	
+ * Dead Code to be removed
+ * 
 	private String getLinkByPingingPrvslyCnctdIPs(){
 		String addressToHome = "";
 		
@@ -162,6 +214,30 @@ public class InohoConnectionManager {
 		}
 		return addressToHome;
 	}
+	
+	//this API performs ping to identify whether there is any device at the given IP
+	
+	private boolean isLinkAccessible (String link) {
+		boolean linkAccessible = false;
+		Runtime runtime = Runtime.getRuntime();
+        try {
+            Process  mIpAddrProcess = runtime.exec("/system/bin/ping -c 1 " + link);
+            int mExitValue = mIpAddrProcess.waitFor();
+            if(mExitValue==0) {
+                linkAccessible = true;
+            } else {
+                linkAccessible = false;
+            }
+        } catch (InterruptedException ignore) {
+        	
+        } catch (IOException e) {
+        }
+		return linkAccessible;
+	}
+	
+*
+*
+*/
 	
 	private String getLinkByPingingBroadCastIP() {
 		String linkToHome = "";
@@ -271,25 +347,7 @@ public class InohoConnectionManager {
 		return result;
 	}
 	
-	//this API performs ping to identify whether there is any device at the given IP
 	
-	private boolean isLinkAccessible (String link) {
-		boolean linkAccessible = false;
-		Runtime runtime = Runtime.getRuntime();
-        try {
-            Process  mIpAddrProcess = runtime.exec("/system/bin/ping -c 1 " + link);
-            int mExitValue = mIpAddrProcess.waitFor();
-            if(mExitValue==0) {
-                linkAccessible = true;
-            } else {
-                linkAccessible = false;
-            }
-        } catch (InterruptedException ignore) {
-        	
-        } catch (IOException e) {
-        }
-		return linkAccessible;
-	}
 	
 	private boolean isDeviceOnline() {
 		boolean isOnline = false;
