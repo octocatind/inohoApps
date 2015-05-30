@@ -78,7 +78,7 @@ public class InohoConnectionManager {
 	    addressToHome = getLinkFromPreferedAndPrvslyCnctdIPs(ipAdrsPart);
 	    if(addressToHome.isEmpty()) {
 	    	if(addressToHome.isEmpty()) {
-	    		addressToHome = getLinkByPingingBroadCastIP();
+	    		addressToHome = getLinkByPingingBroadCastIP(quickConnect);
 	    		if(addressToHome.isEmpty() && !quickConnect){//do this only in full connect flow
 	    			addressToHome = getLinkByPingingAll(ipAdrsPart);
 	    		}
@@ -239,7 +239,7 @@ public class InohoConnectionManager {
 *
 */
 	
-	private String getLinkByPingingBroadCastIP() {
+	private String getLinkByPingingBroadCastIP(boolean quickConnect) {
 		String linkToHome = "";
 		
 		final WifiManager wifiManager = (WifiManager) m_AppContext.getSystemService(Context.WIFI_SERVICE);
@@ -253,7 +253,14 @@ public class InohoConnectionManager {
 	    
 	    Runtime runtime = Runtime.getRuntime();
         try {
-            Process  mIpAddrProcess = runtime.exec("/system/bin/ping -c 1 -b " + broadCastIPStr);
+        	String cmdToExec = "";
+        	if(quickConnect) {
+        		cmdToExec = "/system/bin/ping -c 1 -W 1 -b " + broadCastIPStr;
+        	} else {
+        		cmdToExec = "/system/bin/ping -c 1 -b " + broadCastIPStr;
+        	}
+        	
+            Process  mIpAddrProcess = runtime.exec(cmdToExec);
             int mExitValue = mIpAddrProcess.waitFor();            
             if(mExitValue==0) {
 	        	BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(mIpAddrProcess.getInputStream()));
