@@ -272,6 +272,8 @@ public class InohoConnectionManager {
 	            		linkToHome = words[3].substring(0, words[3].length()-1);
 	            		if(isItHome(linkToHome)) {
 	            			break;
+	            		} else {
+	            			linkToHome = "";
 	            		}
 	            	}
 	            }                
